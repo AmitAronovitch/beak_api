@@ -2,5 +2,7 @@
 *.pyc
 .cache
 *.egg-info
+build/
+dist/
 test/__pycache__
 .tox
