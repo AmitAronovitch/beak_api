@@ -1,3 +1,3 @@
 def test_dummy():
-    import beak
+    import beak.api
     assert True
