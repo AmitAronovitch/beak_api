@@ -79,33 +79,35 @@ def event2dict(e):
 @model.db_session
 def getSessions(test=False):
     days = model.select(e.from_.date() for e in model.Event)[:]
-    sessions = {
-        'days': [
-            {'date': d.strftime('%d-%m-%Y'),
-             'events': map(event2dict,
-                           model.Event.select(lambda e: e.from_.date()==d) )
-            }
-            for d in days]
-        }
-    return sessions
+    days_data = []
+    for day in days:
+        days_data.append({
+            'date': day.strftime('%d-%m-%Y'),
+             'events': list(map(
+                 event2dict,
+                 model.Event.select(lambda e: e.from_.date()==day)
+             ))
+        })
+    return {'days': days_data}
 
 @model.db_session
 def events_by_types(type_names):
     evtypes = model.Type.select(lambda t: t.typeName in type_names)
     days = model.select(e.from_.date() for e in model.Event
                      if e.type in evtypes)[:]
-    sessions = {
-        'days': [
-            {'date': d.strftime('%d-%m-%Y'),
-             'events': map(
-                 event2dict,
-                 model.Event.select(lambda e:
-                                 e.type in evtypes and
-                                 e.from_.date()==d) )
-            }
-            for d in days]
-        }
-    return sessions
+    days_data = []
+    for day in days:
+        days_data.append({
+            'date': day.strftime('%d-%m-%Y'),
+            'events': list(map(
+                event2dict,
+                model.Event.select(lambda e:
+                                   e.type in evtypes and
+                                   e.from_.date()==day)
+                ))
+        })
+    return {'days': days_data}
+
 
 for funcname, typenames in API_SESSION_TYPES:
     def _func(typenames = typenames):
