@@ -49,7 +49,7 @@ API_SESSION_TYPES = [
 for funcname,tab in API_TABLES:
     dbname = tab[:-1].capitalize()
     def _func(tab=tab, dbname=dbname):
-        return {tab: [x.to_dict() for x in getattr(model.dbname).select()]}
+        return {tab: [x.to_dict() for x in getattr(model, dbname).select()]}
     _func.__name__ = _func.func_name = funcname
     locals()[funcname] = public(model.db_session(_func))
 
