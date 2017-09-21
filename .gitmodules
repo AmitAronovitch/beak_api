@@ -1,0 +1,3 @@
+[submodule "beak/data"]
+	path = beak/data
+	url = https://github.com/AmitAronovitch/beak.data.git
