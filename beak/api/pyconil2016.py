@@ -1,4 +1,6 @@
-import os.path as op
+import warnings
+import os.path as op, json
+from dateutil.parser import parse
 from ..config import options
 from ..model import pyconil2016 as model
 
@@ -115,10 +117,46 @@ for funcname, typenames in API_SESSION_TYPES:
     _func.__name__ = _func.func_name = funcname
     locals()[funcname] = public(_func)
 
+# initialization stuff
+
+_cmd_table = [
+    ('getLevels', 'levels'),
+    ('getTypes', 'types'),
+    ('getTracks', 'tracks'),
+    ('getLocations', 'locations'),
+    ('getSpeakers', 'speakers'),
+    #getSessions requires special handling
+]
+
+def load_json_data():
+    thisdir = op.abspath(op.split(__file__)[0])
+    jsondir = op.abspath(op.join(thisdir,'..','data','pyconil2016'))
+    if not op.isdir(jsondir):
+        return
+    
+    data = {}
+    for cmd, key in _cmd_table:
+        jdata = json.load(open(op.join(jsondir, cmd+'.json')))
+        table = key[:-1].capitalize()
+        data[table] = jdata[key]
+    
+    days = json.load(open(op.join(jsondir, 'getSessions.json')))['days']
+    events =  sum([day['events'] for day in days], [])
+    for e in events:
+        e["from_"] = parse(e.pop("from"))
+        e["to"] = parse(e["to"])
+    data['Event'] = events
+    return data
+
+# initialize model if required
 
 if not model.initialized():
-    if not op.isfile(options.pyconil2016_db):
-        model.init(options.pyconil2016_db, initialize=True, debug=options.debug_sql)
-        model.populate_from_json()
-    else:
+    if op.isfile(options.pyconil2016_db):
         model.init(options.pyconil2016_db, debug=options.debug_sql)
+    else:
+        model.init(options.pyconil2016_db, initialize=True, debug=options.debug_sql)
+        data = load_json_data()
+        if data:
+            model.populate_from_data(data)
+        else:
+            warnings.warn('pyconil2016: Missing data directory. DB will remain empty')

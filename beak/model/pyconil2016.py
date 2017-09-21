@@ -75,6 +75,7 @@ class Location(db.Entity):
     order = Optional(float)
     deleted = Required(bool, default=False)
 
+# initialization
 
 def init(filename, initialize=False, debug=False):
     logging.debug('initializing pyconil2016 model, filename={0}, init={1}, debug={2}'.format(
@@ -87,6 +88,22 @@ def init(filename, initialize=False, debug=False):
 def initialized():
     return db.provider is not None
 
-def populate_from_json():
-    raise NotImplementedError("can't populate from json yet")
 
+def _ref_from_id(row, field, table):
+    if row[field]:
+        row[field] = table[row[field]]
+    else:
+        del row[field]
+
+@db_session
+def populate_from_data(data):
+    for table in ['Level', 'Type', 'Track', 'Location', 'Speaker']:
+        rows = [globals()[table](**x) for x in data[table]]
+    
+    rows = []
+    for e in data['Event']:
+        e['type'] = Type[e['type']]
+        _ref_from_id(e, 'track', Track)
+        _ref_from_id(e, 'experienceLevel', Level)        
+        e["speakers"] = [Speaker[s] for s in e["speakers"]]
+        rows.append(Event(**e))
