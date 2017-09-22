@@ -1,11 +1,11 @@
 from bottle import route
 from .. import config
 config.init()
-from . import pyconil2016_test, pyconil2016
+from . import pyconil2016, pyconil2016_old
 
 _api_names = []
 
-for apilib in [pyconil2016_test, pyconil2016]:
+for apilib in [pyconil2016, pyconil2016_old]:
     apiname = apilib.__name__.split(".")[-1]
     _api_names.append(apiname)
     

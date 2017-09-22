@@ -1,6 +1,7 @@
 import os, os.path as op, json
 import pytest
 import beak.api.pyconil2016 as api
+import beak.api.pyconil2016_old as oldapi
 
 apidir = op.abspath(op.split(api.__file__)[0])
 datadir = op.abspath(op.join(apidir, '..','data', 'pyconil2016'))
