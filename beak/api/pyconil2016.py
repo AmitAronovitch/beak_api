@@ -1,18 +1,27 @@
-import warnings
+import warnings, logging
 import os.path as op, json
 from dateutil.parser import parse
 from ..config import options
 from ..model import pyconil2016 as model
+from . import pyconil2016_static as static
 
 __all__ = []
+
+# define decorators
 
 def public(func):
     __all__.append(func.__name__)
     return func
 
-#DATA_DIR = '../data/2016'
+def rename(name, scope=None):
+    def renamed(func):
+        func.__name__ = name
+        if scope is not None:
+            scope[name] = func
+        return func
+    return renamed
 
-API_STATIC = () #'checkUpdates', 'getInfo', 'getSettings', 'getPOI'
+API_STATIC = 'checkUpdates', 'getInfo', 'getSettings', 'getPOI'
 
 API_TABLES = [
     ('getLevels','levels'),
@@ -20,52 +29,45 @@ API_TABLES = [
     ('getSpeakers','speakers'),
     ('getTypes','types'),
     ('getTracks','tracks'),
-    ]
+]
 
 API_SESSION_TYPES = [
     ('getBofs', []),
     ('getSocialEvents', ['After party']),
-    ]
+]
 
-# Notes re: Pony schemas
-# * email contains nulls (not empty strings, nullable=True)
-# * on firstName we need autostrip=False,
 
-# static commands (use saved json)
+for funcname in API_STATIC:
+    @public
+    @rename(funcname, locals())
+    def _func(funcname=funcname):
+        return getattr(static, funcname)
+    
+    del _func
 
-#def checkUpdates():
-#    return {'idsForUpdate': [0, 1, 2, 3, 4, 5, 7, 8, 9, 11, 12]}
+# Level, Type, Location, Speaker, Track
 
-#for funcname in API_STATIC:
-#    def _func(funcname=funcname):
-#        return json.load(
-#            open('{0}/{1}.json'.format(DATA_DIR, funcname)) )
-#    _func.__name__ = _func.func_name = funcname
-#    locals()[funcname] = model.db_session(_func)
-
-#@model.db_session
-#def getTypes():
-#    return {'types': [x.to_dict() for x in model.Types.select()]}
-
-# Level, Type, Location, Speaker
-for funcname,tab in API_TABLES:
-    dbname = tab[:-1].capitalize()
-    def _func(tab=tab, dbname=dbname):
-        return {tab: [x.to_dict() for x in getattr(model, dbname).select()]}
-    _func.__name__ = _func.func_name = funcname
-    locals()[funcname] = public(model.db_session(_func))
+for funcname, table in API_TABLES:
+    entity_name = table[:-1].capitalize()
+    
+    @public
+    @rename(funcname, locals())
+    @model.db_session
+    def _func(table=table, entity_name=entity_name):
+        return {table: [x.to_dict()
+                        for x in getattr(model, entity_name).select()]}
+    
+    del _func
 
 # Queries on the Event table
     
 def emulate_old_format(data):
     "convert Event's json to old data format"
-    # from and to had also "+0000", but that's just wrong
+    # from and to had also "+0000" (but that was just wrong)
     data['from'] = data['from'] + '+0000'
     data['to'] = data['to'] + '+0000'
     # original API did not have the youtube link
     data['link'] = ''
-
-#_old_event_format = False
 
 def event2dict(e):
     d = e.to_dict()
@@ -73,8 +75,7 @@ def event2dict(e):
         d['experienceLevel'] = 0
     d['from'] = d.pop('from_').isoformat()
     d['to'] = d['to'].isoformat()
-    d['speakers'] = [x.speakerId for x in e.speakers]
-    #if _old_event_format: emulate_old_format(d)
+    d['speakers'] = sorted([x.speakerId for x in e.speakers])
     return d
 
 @public
@@ -92,6 +93,7 @@ def getSessions(test=False):
         })
     return {'days': days_data}
 
+
 @model.db_session
 def events_by_types(type_names):
     evtypes = model.Type.select(lambda t: t.typeName in type_names)
@@ -106,36 +108,30 @@ def events_by_types(type_names):
                 model.Event.select(lambda e:
                                    e.type in evtypes and
                                    e.from_.date()==day)
-                ))
+            ))
         })
     return {'days': days_data}
 
-
 for funcname, typenames in API_SESSION_TYPES:
+    @public
+    @rename(funcname, locals())
     def _func(typenames = typenames):
         return events_by_types(typenames)
-    _func.__name__ = _func.func_name = funcname
-    locals()[funcname] = public(_func)
+
+    del _func
 
 # initialization stuff
-
-_cmd_table = [
-    ('getLevels', 'levels'),
-    ('getTypes', 'types'),
-    ('getTracks', 'tracks'),
-    ('getLocations', 'locations'),
-    ('getSpeakers', 'speakers'),
-    #getSessions requires special handling
-]
 
 def load_json_data():
     thisdir = op.abspath(op.split(__file__)[0])
     jsondir = op.abspath(op.join(thisdir,'..','data','pyconil2016'))
+    logging.debug('checking for data directory at ' + jsondir)
     if not op.isdir(jsondir):
         return
     
+    logging.debug('loading data from json files')
     data = {}
-    for cmd, key in _cmd_table:
+    for cmd, key in API_TABLES:
         jdata = json.load(open(op.join(jsondir, cmd+'.json')))
         table = key[:-1].capitalize()
         data[table] = jdata[key]

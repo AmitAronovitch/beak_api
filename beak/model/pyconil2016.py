@@ -1,4 +1,7 @@
 # Designed via web interface: https://editor.ponyorm.com/user/amitar/pyconil_2016_test/designer
+# Notes (for Speaker table):
+# * email contains nulls (not empty strings, nullable=True)
+# * on firstName we need autostrip=False,
 
 import logging
 from datetime import datetime
@@ -98,8 +101,10 @@ def _ref_from_id(row, field, table):
 @db_session
 def populate_from_data(data):
     for table in ['Level', 'Type', 'Track', 'Location', 'Speaker']:
+        logging.debug('populating {0} table'.format(table))
         rows = [globals()[table](**x) for x in data[table]]
     
+    logging.debug('populating Event table')
     rows = []
     for e in data['Event']:
         e['type'] = Type[e['type']]
