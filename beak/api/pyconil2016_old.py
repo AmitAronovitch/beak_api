@@ -1,6 +1,8 @@
 from ..utils import public, rename
 from . import pyconil2016 as api
 
+cmd_suffix = '.js'
+
 for name in api.API_STATIC +\
     ('getLevels', 'getSpeakers', 'getTypes', 'getTracks', 'getBofs'):
     @public
