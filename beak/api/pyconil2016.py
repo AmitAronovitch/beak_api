@@ -2,24 +2,9 @@ import warnings, logging
 import os.path as op, json
 from dateutil.parser import parse
 from ..config import options
+from ..utils import public, rename
 from ..model import pyconil2016 as model
 from . import pyconil2016_static as static
-
-__all__ = []
-
-# define decorators
-
-def public(func):
-    __all__.append(func.__name__)
-    return func
-
-def rename(name, scope=None):
-    def renamed(func):
-        func.__name__ = name
-        if scope is not None:
-            scope[name] = func
-        return func
-    return renamed
 
 API_STATIC = 'checkUpdates', 'getInfo', 'getSettings', 'getPOI'
 
@@ -80,7 +65,7 @@ def event2dict(e):
 
 @public
 @model.db_session
-def getSessions(test=False):
+def getSessions():
     days = model.select(e.from_.date() for e in model.Event)[:]
     days_data = []
     for day in days:

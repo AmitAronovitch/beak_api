@@ -17,3 +17,12 @@ def test_data():
             op.join(datadir, '.'.join([cmd, 'json']))
         ))
         assert data==jdata
+
+@datatest
+def test_old_data():
+    for cmd in oldapi.__all__:
+        data = getattr(oldapi, cmd)()
+        jdata = json.load(open(
+            op.join(datadir+'_old', '.'.join([cmd, 'js']))
+        ))
+        assert data==jdata
