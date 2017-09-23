@@ -15,6 +15,9 @@ if __name__ == '__main__':
             'bottle',
             'pony',
         ],
+        tests_require = [
+            'WebTest',
+        ],
         packages = find_packages(), #['beak']
         
         **meta

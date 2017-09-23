@@ -12,14 +12,24 @@ class Options(object):
 
 options = Options(
     _config_path = None,
-    debug_sql = True, #False, # deduce from log_level?
-    log_level = logging.DEBUG, #logging.INFO
+    
+    log_level = logging.DEBUG,
+    debug_sql = True,
     pyconil2016_db = op.join(ad.user_data_dir(appname, appauthor),
-                           'pyconil2016.sqlite')
+                             'pyconil2016.sqlite'),
+    # following are only used for the standalone runner (beak.api.run)
+    host = '127.0.0.1',
+    port = 8080,
 )
 
-def read_config(path, keys):
-    d = {}
+options_glob = dict(
+    [(x, getattr(logging,x)) for x in [
+        'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'] ],
+    environ = os.environ
+)
+
+def read_config(path, keys, globs={}):
+    d = dict(**globs)
     exec(open(path).read(), d)
     return dict( (k, d[k]) for k in d if k in keys )
 
@@ -27,18 +37,18 @@ def read_options_file(options, fname):
     for confdir in [ad.site_config_dir(appname, appauthor),
                     ad.user_config_dir(appname, appauthor)]:
         path = op.join(confdir, fname)
-        print('----->checking {0}'.format(path))
+        # Note: logging level here is BEFORE the config was read. Typically INFO
+        logging.debug('checking for config at {0}'.format(path))
         if op.isfile(path):
-            print('----->reading config from {0}'.format(path))
+            logging.debug('reading config from {0}'.format(path))
             options._config_path = path
-            options.__dict__.update(read_config(path, options._keys))
+            options.__dict__.update(read_config(
+                path, options._keys, options_glob))
 
 def init():
     read_options_file(options, 'options.py')
-    logging.basicConfig(level=options.log_level)
+    logging.getLogger().setLevel(options.log_level)
     logging.debug('options = {0}'.format(options.__dict__))
     data_dir = ad.user_data_dir(appname, appauthor)
     if (options._config_path is None) and not op.isdir(data_dir):
         os.makedirs(data_dir)
-
-        
