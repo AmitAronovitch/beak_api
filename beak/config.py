@@ -13,8 +13,8 @@ class Options(object):
 options = Options(
     _config_path = None,
     
-    log_level = logging.DEBUG,
-    debug_sql = True,
+    log_level = logging.INFO,
+    debug_sql = False,
     pyconil2016_db = op.join(ad.user_data_dir(appname, appauthor),
                              'pyconil2016.sqlite'),
     # following are only used for the standalone runner (beak.api.run)

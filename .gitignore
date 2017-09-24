@@ -2,6 +2,7 @@
 *.pyc
 .cache
 .eggs
+README.html
 *.egg-info
 build/
 dist/
