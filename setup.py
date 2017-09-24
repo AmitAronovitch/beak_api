@@ -15,8 +15,10 @@ if __name__ == '__main__':
             'bottle',
             'pony',
         ],
+        
+        setup_requires = ['pytest-runner'],
         tests_require = [
-            'WebTest',
+            'pytest', 'WebTest'
         ],
         packages = find_packages(), #['beak']
         

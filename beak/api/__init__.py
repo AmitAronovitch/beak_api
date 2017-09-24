@@ -1,7 +1,9 @@
-from bottle import route
+from bottle import route, default_app
 from .. import config
 config.init()
 from . import pyconil2016, pyconil2016_old
+
+app = application = default_app()
 
 _api_names = []
 
@@ -16,7 +18,7 @@ for apilib in [pyconil2016, pyconil2016_old]:
         return getattr(apilib, cmd)()
     
     @route('/api/{0}/list'.format(apiname))
-    def list(apilib=apilib):
+    def list(apilib=apilib, suffix=suffix):
         return {'commands': [x+suffix for x in apilib.__all__]}
 
 @route('/api/list')
