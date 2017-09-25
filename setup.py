@@ -9,6 +9,8 @@ meta = dict(
 
 if __name__ == '__main__':
     setup(
+        python_requires = '>=2.7.9, >=3.4',
+        
         install_requires = [
             'appdirs',
             'python-dateutil',
