@@ -1,4 +1,8 @@
 import sys
+try:
+    from inspect import signature, Signature
+except ImportError:
+    from funcsigs import signature, Signature
 
 # decorators
 
@@ -15,3 +19,10 @@ def rename(name, scope=None):
             scope[name] = func
         return func
     return renamed
+
+# introspection
+
+def positional_args(func):
+    params = signature(func).parameters
+    return [p for p in params if params[p].default is Signature.empty]
+
