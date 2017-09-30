@@ -16,9 +16,15 @@ def test_api_commands():
         resp = app.get('/api/{0}/list'.format(api))
         assert resp.status_int == 200
         assert resp.content_type == 'application/json'
-        items = resp.json['commands']
-
+        
+        out_sigs = resp.json['commands']
+        out_cmds = [x.split('/')[0] for x in out_sigs]
+        
         apilib = getattr(beak.api, api)
         suffix = getattr(apilib, 'cmd_suffix', '')
         cmds = [x+suffix for x in apilib.__all__]
-        assert items == cmds
+        assert cmds == out_cmds
+        
+        sigs = [beak.api.api_signature(apilib, name, suffix)
+                for name in apilib.__all__]
+        assert sigs == out_sigs

@@ -39,7 +39,10 @@ def event_tracks(event_id):
 def event_sessions(event_id):
     event = get_by_id(model.Event, event_id)
     if event is None: return {'sessions':[]}
-    sessions = event.tracks.sessions.order_by(model.Session.time)
+    sessions = model.select(
+        s for t in model.Track for s in t.sessions
+        if t in event.tracks).order_by(model.Session.time)
+    #sessions = event.tracks.sessions.order_by(model.Session.time)
     return {'sessions':[session2dict(x) for x in sessions]}
 
 @public
