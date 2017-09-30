@@ -1,10 +1,8 @@
-import warnings, logging
-import os.path as op, json
-from dateutil.parser import parse
-from ..config import options
 from ..utils import public, rename
-from ..model import pyconil2016 as model
+from ..model import load as model_load
 from . import pyconil2016_static as static
+
+model = model_load('pyconil2016')
 
 API_STATIC = 'checkUpdates', 'getInfo', 'getSettings', 'getPOI'
 
@@ -46,14 +44,6 @@ for funcname, table in API_TABLES:
 
 # Queries on the Event table
     
-def emulate_old_format(data):
-    "convert Event's json to old data format"
-    # from and to had also "+0000" (but that was just wrong)
-    data['from'] = data['from'] + '+0000'
-    data['to'] = data['to'] + '+0000'
-    # original API did not have the youtube link
-    data['link'] = ''
-
 def event2dict(e):
     d = e.to_dict()
     if d['experienceLevel'] is None:
@@ -104,40 +94,3 @@ for funcname, typenames in API_SESSION_TYPES:
         return events_by_types(typenames)
 
     del _func
-
-# initialization stuff
-
-def load_json_data():
-    thisdir = op.abspath(op.split(__file__)[0])
-    jsondir = op.abspath(op.join(thisdir,'..','data','pyconil2016'))
-    logging.debug('checking for data directory at ' + jsondir)
-    if not op.isdir(jsondir):
-        return
-    
-    logging.debug('loading data from json files')
-    data = {}
-    for cmd, key in API_TABLES:
-        jdata = json.load(open(op.join(jsondir, cmd+'.json')))
-        table = key[:-1].capitalize()
-        data[table] = jdata[key]
-    
-    days = json.load(open(op.join(jsondir, 'getSessions.json')))['days']
-    events =  sum([day['events'] for day in days], [])
-    for e in events:
-        e["from_"] = parse(e.pop("from"))
-        e["to"] = parse(e["to"])
-    data['Event'] = events
-    return data
-
-# initialize model if required
-
-if not model.initialized():
-    if op.isfile(options.pyconil2016_db):
-        model.init(options.pyconil2016_db, debug=options.debug_sql)
-    else:
-        model.init(options.pyconil2016_db, initialize=True, debug=options.debug_sql)
-        data = load_json_data()
-        if data:
-            model.populate_from_data(data)
-        else:
-            warnings.warn('pyconil2016: Missing data directory. DB will remain empty')

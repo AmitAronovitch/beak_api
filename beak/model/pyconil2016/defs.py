@@ -3,7 +3,6 @@
 # * email contains nulls (not empty strings, nullable=True)
 # * on firstName we need autostrip=False,
 
-import logging
 from datetime import datetime
 from pony.orm import *
 
@@ -78,37 +77,3 @@ class Location(db.Entity):
     order = Optional(float)
     deleted = Required(bool, default=False)
 
-# initialization
-
-def init(filename, initialize=False, debug=False):
-    logging.debug('initializing pyconil2016 model, filename={0}, init={1}, debug={2}'.format(
-        filename, initialize, debug))
-    if debug:
-        sql_debug(True)
-    db.bind(provider='sqlite', filename=filename, create_db=initialize)
-    db.generate_mapping(create_tables=initialize)
-
-def initialized():
-    return db.provider is not None
-
-
-def _ref_from_id(row, field, table):
-    if row[field]:
-        row[field] = table[row[field]]
-    else:
-        del row[field]
-
-@db_session
-def populate_from_data(data):
-    for table in ['Level', 'Type', 'Track', 'Location', 'Speaker']:
-        logging.debug('populating {0} table'.format(table))
-        rows = [globals()[table](**x) for x in data[table]]
-    
-    logging.debug('populating Event table')
-    rows = []
-    for e in data['Event']:
-        e['type'] = Type[e['type']]
-        _ref_from_id(e, 'track', Track)
-        _ref_from_id(e, 'experienceLevel', Level)        
-        e["speakers"] = [Speaker[s] for s in e["speakers"]]
-        rows.append(Event(**e))

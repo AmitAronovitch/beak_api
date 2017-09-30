@@ -17,6 +17,8 @@ options = Options(
     debug_sql = False,
     pyconil2016_db = op.join(ad.user_data_dir(appname, appauthor),
                              'pyconil2016.sqlite'),
+    pyconil_db = op.join(ad.user_data_dir(appname, appauthor),
+                         'pyconil.sqlite'),
     # following are only used for the standalone runner (beak.api.run)
     host = '127.0.0.1',
     port = 8080,
