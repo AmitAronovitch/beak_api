@@ -2,6 +2,13 @@ import os.path as op
 import logging, json
 from dateutil.parser import parse
 
+API_TABLES = [
+    ('getLevels','levels'),
+    ('getLocations','locations'),
+    ('getSpeakers','speakers'),
+    ('getTypes','types'),
+    ('getTracks','tracks'),
+]
 
 def load():
     thisdir = op.abspath(op.split(__file__)[0])

@@ -1,7 +1,19 @@
-import os.path as op
+try:
+    from inspect import signature
+except ImportError:
+    from funcsigs import signature
+import os, os.path as op
 import logging, warnings
 from importlib import import_module
 from ..config import options
+
+# hack: patch old versions of os.makedirs (TODO: does 'future' support this?)
+if not 'exist_ok' in signature(os.makedirs).parameters:
+    def makedirs(path, mode=0o777, exist_ok=False):
+        if not op.exists(path):
+            os.makedirs(path, mode)
+else:
+    makedirs = os.makedirs
 
 
 def init_model(model, filename, initialize=False, debug=False):
@@ -26,10 +38,11 @@ def _load_data(model):
 def load(modelname):
     model = import_module('.'+modelname, __name__)
     if not _initialized(model):
-        dbpath = getattr(options, modelname + '_db')
+        dbpath = op.abspath(getattr(options, modelname + '_db'))
         if op.isfile(dbpath):
             init_model(model, dbpath, debug=options.debug_sql)
         else:
+            makedirs(op.dirname(dbpath), exist_ok=True)
             init_model(model, dbpath, initialize=True, debug=options.debug_sql)
             data = _load_data(model)
             if data:
