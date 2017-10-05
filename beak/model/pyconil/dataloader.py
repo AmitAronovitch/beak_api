@@ -252,12 +252,16 @@ class Convertor:
         return data
 
 def load():
+    data = load_2017()
+    if data is None: return
     old = load_2016()
-    new = load_2017()
-    c = Convertor(old, new)
-    new = load_2017(c.initial_2017_ids(), c.common_speakers)
-    
-    data = c.old_data()
-    for key in data:
-        data[key].extend(new[key])
+    if old is None:
+        return data
+    else:
+        c = Convertor(old, data)
+        new = load_2017(c.initial_2017_ids(), c.common_speakers)
+        
+        data = c.old_data()
+        for key in data:
+            data[key].extend(new[key])
     return data
