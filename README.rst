@@ -35,7 +35,7 @@ If it is python3-based, you may need to install `python3.x-venv` instead of
   ~$ git clone --recursive https://github.com/AmitAronovitch/beak_api.git
   ~$ cd beak_api
 
-Note: --recursive is required for auto-filling your new database with actual data
+**Note:** --recursive is required for auto-filling your new database with actual data
 
 .. code-block:: bash
 
@@ -47,13 +47,21 @@ This will start a local API server on port 8080 (test it by pointing browsing
 locally to http://127.0.0.1:8080/api/list , then close using Ctrl-C on the
 terminal).
 
-Now, save the following file as `~/.config/beakapi/options.py`
+.. _git: https://git-scm.com/download/linux
+.. _virtualenv: https://virtualenv.pypa.io/en/stable/installation/
+
+Configuration
+=============
+
+Save the following file as `~/.config/beakapi/options.py`
 
 .. code-block:: python
 
   #log_level = DEBUG
   #debug_sql = False
+  #api_root = '/api', # prefix for the api routes
   #pycon2016_db = '/home/amit/.local/share/beakapi/pyconil2016.sqlite'
+  #pyconil_db = '/home/amit/.local/share/beakapi/pyconil.sqlite'
   
   # following are used for the standalone runner (beak.api.run)
   host = '0.0.0.0' #127.0.0.1 for local host only, 0.0.0.0 for all interfaces
@@ -64,14 +72,19 @@ port number which is open on the firewall). Other parameters in the config
 control the debug level and the location of the DB (the database had been built
 and auto-filled on your first run).
 
+**Note:** We use appdirs_ to set up native locations for the configuration and
+data files. On Linux/Unix platforms, the user config dir would be found in
+`~/.config/beakapi`, and the system config dir would be somewhere under
+`/etc/xdg` (see the env variable `$XDG_CONFIG_DIRS`).
+The database files are kept in the user-data dir, typically `~/.local/share/beakapi`.
+
 Now, you can run the configured stand-alone server in the background:
 
 .. code-block:: bash
 
   ~/beak_api$ env/bin/python -m beak.api.run 2>&1 | cat >beak.api.log &
   
-.. _git: https://git-scm.com/download/linux
-.. _virtualenv: https://virtualenv.pypa.io/en/stable/installation/
+.. _appdirs: https://github.com/ActiveState/appdirs
 
 Installing behind a WSGI-compatible web-server
 ==============================================

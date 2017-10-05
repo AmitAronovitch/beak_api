@@ -15,6 +15,7 @@ options = Options(
     
     log_level = logging.INFO,
     debug_sql = False,
+    api_root = '/api', # prefix for the api routes
     pyconil2016_db = op.join(ad.user_data_dir(appname, appauthor),
                              'pyconil2016.sqlite'),
     pyconil_db = op.join(ad.user_data_dir(appname, appauthor),
