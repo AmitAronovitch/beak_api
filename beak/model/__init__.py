@@ -2,13 +2,16 @@ try:
     from inspect import signature
 except ImportError:
     from funcsigs import signature
-import os, os.path as op
-import logging, warnings
+import logging
+import os
+import os.path as op
+import warnings
 from importlib import import_module
+
 from ..config import options
 
 # hack: patch old versions of os.makedirs (TODO: does 'future' support this?)
-if not 'exist_ok' in signature(os.makedirs).parameters:
+if 'exist_ok' not in signature(os.makedirs).parameters:
     def makedirs(path, mode=0o777, exist_ok=False):
         if not op.exists(path):
             os.makedirs(path, mode)
@@ -28,6 +31,7 @@ def init_model(model, filename, initialize=False, debug=False):
 def _initialized(model):
     return model.db.provider is not None
 
+
 def _load_data(model):
     try:
         load = import_module('.dataloader', model.__name__).load
@@ -35,8 +39,9 @@ def _load_data(model):
         load = lambda: None
     return load()
 
+
 def load(modelname):
-    model = import_module('.'+modelname, __name__)
+    model = import_module('.' + modelname, __name__)
     if not _initialized(model):
         dbpath = op.abspath(getattr(options, modelname + '_db'))
         if op.isfile(dbpath):

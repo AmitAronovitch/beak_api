@@ -1,40 +1,46 @@
-import os, os.path as op
 import logging
+import os
+import os.path as op
+
 import appdirs as ad
 
 appname = 'beakapi'
 appauthor = 'Hamakor'
+
 
 class Options(object):
     def __init__(self, *args, **keys):
         self.__dict__ = dict(*args, **keys)
         self._keys = set(x for x in self.__dict__ if not x.startswith('_'))
 
+
 options = Options(
-    _config_path = None,
-    
-    log_level = logging.INFO,
-    debug_sql = False,
-    api_root = '/api', # prefix for the api routes
-    pyconil2016_db = op.join(ad.user_data_dir(appname, appauthor),
-                             'pyconil2016.sqlite'),
-    pyconil_db = op.join(ad.user_data_dir(appname, appauthor),
-                         'pyconil.sqlite'),
+    _config_path=None,
+
+    log_level=logging.INFO,
+    debug_sql=False,
+    api_root='/api',  # prefix for the api routes
+    pyconil2016_db=op.join(ad.user_data_dir(appname, appauthor),
+                           'pyconil2016.sqlite'),
+    pyconil_db=op.join(ad.user_data_dir(appname, appauthor),
+                       'pyconil.sqlite'),
     # following are only used for the standalone runner (beak.api.run)
-    host = '127.0.0.1',
-    port = 8080,
+    host='127.0.0.1',
+    port=8080,
 )
 
 options_glob = dict(
-    [(x, getattr(logging,x)) for x in [
-        'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'] ],
-    environ = os.environ
+    [(x, getattr(logging, x)) for x in [
+        'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET']],
+    environ=os.environ
 )
+
 
 def read_config(path, keys, globs={}):
     d = dict(**globs)
     exec(open(path).read(), d)
-    return dict( (k, d[k]) for k in d if k in keys )
+    return dict((k, d[k]) for k in d if k in keys)
+
 
 def read_options_file(options, fname):
     for confdir in [ad.site_config_dir(appname, appauthor),
@@ -47,6 +53,7 @@ def read_options_file(options, fname):
             options._config_path = path
             options.__dict__.update(read_config(
                 path, options._keys, options_glob))
+
 
 def init():
     read_options_file(options, 'options.py')

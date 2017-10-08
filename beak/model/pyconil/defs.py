@@ -2,8 +2,8 @@
 # (when updating, remove the generate_mapping() call at the bottom)
 from datetime import datetime
 from datetime import timedelta
-from pony.orm import *
 
+from pony.orm import *
 
 db = Database()
 
@@ -56,4 +56,3 @@ class Speaker(db.Entity):
     github = Optional(str)
     webpage = Optional(str)
     sessions = Set(Session)
-

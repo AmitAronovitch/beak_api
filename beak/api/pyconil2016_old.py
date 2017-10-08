@@ -1,7 +1,8 @@
-from ..utils import public, rename
 from . import pyconil2016 as api
+from ..utils import public, rename
 
 cmd_suffix = '.js'
+
 
 # private funcs
 
@@ -13,20 +14,23 @@ def _emulate_old_event(event):
     # original API did not have the youtube link
     event['link'] = ''
 
+
 def _fix_sessions_output(data):
     for day in data['days']:
         for event in day['events']:
             _emulate_old_event(event)
     return data
 
+
 # export funcs which remain the same
 
-for name in api.API_STATIC +\
-    ('getLevels', 'getSpeakers', 'getTypes', 'getTracks', 'getBofs'):
+for name in api.API_STATIC + \
+        ('getLevels', 'getSpeakers', 'getTypes', 'getTracks', 'getBofs'):
     @public
     @rename(name, locals())
     def _f(name=name):
         return getattr(api, name)()
+
 
 # modified funcs
 
@@ -38,11 +42,12 @@ def getLocations():
         loc['latitude'] = '{0:.6f}'.format(loc['latitude'])
     return data
 
+
 @public
 def getSessions():
     return _fix_sessions_output(api.getSessions())
 
+
 @public
 def getSocialEvents():
     return _fix_sessions_output(api.getSocialEvents())
-

@@ -4,8 +4,8 @@
 # * on firstName we need autostrip=False,
 
 from datetime import datetime
-from pony.orm import *
 
+from pony.orm import *
 
 db = Database()
 
@@ -76,4 +76,3 @@ class Location(db.Entity):
     address = Optional(str)
     order = Optional(float)
     deleted = Required(bool, default=False)
-

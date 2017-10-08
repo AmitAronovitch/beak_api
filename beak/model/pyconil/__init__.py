@@ -1,11 +1,13 @@
 import logging
+
 from .defs import *
+
 
 # functions for later refactoring:
 #  should be useful for automating the populate() method
 #  (based on data conventions)
 
-#def entity_relations(entity):
+# def entity_relations(entity):
 #    return [
 #        prop for prop in entity._base_attrs_ + entity._new_attrs_
 #        if isinstance(prop.py_type, (str, core.EntityMeta)) ]
@@ -17,6 +19,7 @@ def _ref_from_id(row, field, table):
         row[field] = table[row[field]]
     else:
         del row[field]
+
 
 @db_session
 def populate(data):
@@ -34,7 +37,7 @@ def populate(data):
     rows = []
     for d in data['Session']:
         _ref_from_id(d, 'session_type', SessionType)
-        _ref_from_id(d, 'location', Location)        
+        _ref_from_id(d, 'location', Location)
         _ref_from_id(d, 'track', Track)
         d["speakers"] = [Speaker[s] for s in d["speakers"]]
         rows.append(Session(**d))
