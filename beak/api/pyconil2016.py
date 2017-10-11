@@ -1,6 +1,6 @@
-from . import pyconil2016_static as static
-from ..model import load as model_load
 from ..utils import public, rename
+from ..model import load as model_load
+from . import pyconil2016_static as static
 
 model = model_load('pyconil2016')
 

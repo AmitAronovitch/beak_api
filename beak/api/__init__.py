@@ -1,8 +1,8 @@
 from bottle import route, default_app
 
-from . import pyconil2016, pyconil2016_old, pyconil
 from ..config import options
 from ..utils import positional_args
+from . import pyconil2016, pyconil2016_old, pyconil
 
 app = application = default_app()
 root = options.api_root

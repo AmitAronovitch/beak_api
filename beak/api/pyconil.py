@@ -1,5 +1,5 @@
-from ..model import load as model_load
 from ..utils import public
+from ..model import load as model_load
 
 model = model_load('pyconil')
 

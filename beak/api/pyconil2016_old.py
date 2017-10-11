@@ -1,5 +1,5 @@
-from . import pyconil2016 as api
 from ..utils import public, rename
+from . import pyconil2016 as api
 
 cmd_suffix = '.js'
 
